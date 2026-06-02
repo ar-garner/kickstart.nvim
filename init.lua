@@ -305,6 +305,83 @@ require('lazy').setup({
     },
   },
 
+  -- Copilot + Sidekick
+  {
+    'zbirenbaum/copilot.lua',
+    event = 'InsertEnter',
+    opts = {
+      panel = { enabled = false },
+      suggestion = {
+        enabled = true,
+        auto_trigger = true,
+        keymap = {
+          accept = '<C-l>',
+          accept_word = false,
+          accept_line = false,
+          next = '<M-]>',
+          prev = '<M-[>',
+          dismiss = '<C-]>',
+        },
+      },
+    },
+  },
+
+  {
+    'folke/sidekick.nvim',
+    dependencies = {
+      'zbirenbaum/copilot.lua',
+    },
+    opts = {
+      diff = {
+        inline = 'words',
+        show = 'always',
+      },
+    },
+    keys = {
+      {
+        '<M-l>',
+        function()
+          if not require('sidekick').nes_jump_or_apply() then
+            return '<Tab>'
+          end
+        end,
+        expr = true,
+        mode = 'i',
+        desc = 'Goto/Apply Next Edit Suggestion',
+      },
+      {
+        '<leader>aa',
+        function()
+          require('sidekick.cli').toggle()
+        end,
+        desc = 'Sidekick Toggle CLI',
+      },
+      {
+        '<leader>as',
+        function()
+          require('sidekick.cli').select()
+        end,
+        desc = 'Sidekick Select CLI',
+      },
+      {
+        '<leader>ap',
+        function()
+          require('sidekick.cli').prompt()
+        end,
+        mode = { 'n', 'x' },
+        desc = 'Sidekick Prompt',
+      },
+      {
+        '<leader>at',
+        function()
+          require('sidekick.cli').send { msg = '{this}' }
+        end,
+        mode = { 'n', 'x' },
+        desc = 'Sidekick Send This',
+      },
+    },
+  },
+
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
   -- This is often very useful to both group configuration, as well as handle
@@ -695,6 +772,7 @@ require('lazy').setup({
         -- clangd = {},
         gopls = {},
         -- pyright = {},
+        terraformls = {},
         rust_analyzer = {
           settings = {
             ['rust-analyzer'] = {
@@ -746,6 +824,8 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'terraform-ls',
+        'tflint',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -798,6 +878,10 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+          go = { 'goimports', 'gofmt' },
+          rust = { 'rustfmt' },
+          terraform = { 'terraform_fmt' },
+          hcl = { 'terraform_fmt' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -977,7 +1061,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'rust', 'yaml', 'go' },
+      ensure_installed = { 'bash', 'c', 'diff', 'go', 'gomod', 'gosum', 'gowork', 'hcl', 'html', 'json', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'rust', 'terraform', 'toml', 'vim', 'vimdoc',  'yaml',},
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -995,6 +1079,12 @@ require('lazy').setup({
     --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+    {
+      'nvim-treesitter/nvim-treesitter-context',
+      opts = {
+        max_lines = 3,
+      },
+    }
   },
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
